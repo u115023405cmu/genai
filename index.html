@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CycleFit｜週期化健康管理</title>
+<style>
+:root{--bg:#f8f9fa;--card:#fff;--ink:#212529;--muted:#6c757d;--line:#dee2e6;--soft:#e9ecef;--dark:#212529;--radius:16px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);padding:16px clamp(16px,4vw,42px)}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1200px;margin:auto}.brand h1{font-size:20px;letter-spacing:-.04em;margin:0}.brand small{color:var(--muted)}
+nav{display:flex;gap:8px;max-width:1200px;margin:14px auto 0;overflow-x:auto;padding-bottom:2px}
+nav button{flex:0 0 auto;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:9px 15px;cursor:pointer;font:inherit}
+nav button.active,button.primary{background:var(--dark);color:#fff;border-color:var(--dark)}
+main{max-width:1200px;margin:24px auto;padding:0 clamp(14px,3vw,30px) 48px}
+.view{display:none}.view.active{display:block}.pagehead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:18px}.pagehead h2{font-size:26px;letter-spacing:-.04em;margin:0}.sub{color:var(--muted);margin:4px 0 0}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-width:0}.span-3{grid-column:span 3}.span-4{grid-column:span 4}.span-5{grid-column:span 5}.span-6{grid-column:span 6}.span-7{grid-column:span 7}.span-8{grid-column:span 8}.span-12{grid-column:span 12}
+.card h3{margin:0 0 12px;font-size:16px}.eyebrow{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}.metric{font-size:29px;font-weight:700;letter-spacing:-.04em;margin:4px 0}.muted{color:var(--muted)}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.pill{display:inline-flex;padding:4px 9px;border-radius:99px;background:var(--soft);font-size:12px}.progress{height:8px;background:var(--soft);border-radius:99px;overflow:hidden;margin:8px 0 5px}.progress span{display:block;height:100%;background:var(--dark);border-radius:99px;width:0}.nutrient{margin:12px 0}.nutrient .row{font-size:13px}
+label{display:block;font-size:13px;font-weight:600;margin:0 0 6px}input,select,textarea{width:100%;padding:10px 11px;border:1px solid #ced4da;border-radius:10px;background:#fff;color:var(--ink);font:inherit;min-width:0}input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid #495057;outline-offset:2px}
+.field{margin-bottom:13px}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.fields .full{grid-column:1/-1}
+button,.filelabel{font:inherit;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:9px 13px}.actions{display:flex;gap:8px;flex-wrap:wrap}.small{font-size:12px}.checkgrid{display:flex;gap:10px;flex-wrap:wrap}.checkgrid label{font-weight:400;display:flex;gap:6px;align-items:center;margin:0}.checkgrid input{width:auto}
+.notice{padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#f8f9fa;color:#495057;font-size:13px}.list{display:grid;gap:10px}.meal,.workout{padding:12px;border:1px solid var(--line);border-radius:12px}.meal h4,.workout h4{margin:0 0 4px;font-size:15px}.meal p,.workout p{margin:0;color:var(--muted);font-size:13px}
+canvas{width:100%;height:220px;display:block}.empty{padding:20px;text-align:center;color:var(--muted)}.divider{height:1px;background:var(--line);margin:16px 0}
+footer{max-width:1200px;margin:0 auto;padding:0 20px 30px;color:var(--muted);font-size:12px}
+@media(max-width:800px){.span-3,.span-4,.span-5,.span-6,.span-7,.span-8{grid-column:span 6}.span-12{grid-column:span 12}}
+@media(max-width:520px){header{padding:12px}.brand h1{font-size:18px}.brand small{font-size:11px}nav{margin-top:10px}nav button{padding:8px 12px;font-size:13px}main{margin-top:18px}.span-3,.span-4,.span-5,.span-6,.span-7,.span-8,.span-12{grid-column:span 12}.fields{grid-template-columns:1fr}.pagehead h2{font-size:23px}.card{padding:15px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div><h1>CycleFit <span class="muted">/ 週期化健康管理</span></h1><small>用數據了解自己，依狀態彈性調整</small></div><span class="pill" id="todayLabel"></span></div>
+  <nav aria-label="主要功能">
+    <button class="active" data-view="dashboard">總覽儀表板</button>
+    <button data-view="tracker">每日數據紀錄</button>
+    <button data-view="diet">飲食與預算建議</button>
+    <button data-view="workout">週期運動菜單</button>
+    <button data-view="settings">系統設定與備份</button>
+  </nav>
+</header>
+<main>
+<section class="view active" id="dashboard">
+  <div class="pagehead"><div><h2>今日總覽</h2><p class="sub" id="dashDate"></p></div><button class="primary" onclick="switchView('tracker')">＋ 記錄今天</button></div>
+  <div class="grid">
+    <article class="card span-4"><div class="eyebrow">目前週期</div><div class="metric" id="phaseName">尚未設定</div><div class="row"><span id="cycleDay" class="muted">請設定月經開始日</span><span class="pill" id="cycleLength">週期資訊</span></div><div class="divider"></div><p id="phaseTip" class="muted">週期預測僅供參考，實際感受因人而異。</p></article>
+    <article class="card span-4"><div class="eyebrow">每日熱量參考</div><div class="metric" id="calorieMetric">— <small style="font-size:14px">kcal</small></div><div class="muted small" id="calorieCaption">完成基本資料即可估算</div><div class="divider"></div><div class="nutrient"><div class="row"><span>蛋白質</span><b id="dashProtein">—</b></div><div class="progress"><span id="proteinBar"></span></div></div><div class="nutrient"><div class="row"><span>碳水化合物</span><b id="dashCarbs">—</b></div><div class="progress"><span id="carbsBar"></span></div></div><div class="nutrient"><div class="row"><span>脂質</span><b id="dashFat">—</b></div><div class="progress"><span id="fatBar"></span></div></div></article>
+    <article class="card span-4"><div class="eyebrow">今日生活紀錄</div><div class="row"><span>飲水</span><strong id="waterSummary">—</strong></div><div class="progress"><span id="waterBar"></span></div><div class="row"><span>睡眠</span><strong id="sleepSummary">—</strong></div><div class="divider"></div><div class="row"><span>今日心情</span><strong id="moodSummary">尚未記錄</strong></div><div class="row" style="margin-top:8px"><span>症狀</span><strong id="symptomSummary">—</strong></div></article>
+    <article class="card span-8"><div class="row"><h3>近 30 天體態趨勢</h3><span class="muted small">體重 kg／體脂 %</span></div><canvas id="trendChart" aria-label="近三十天體重趨勢圖"></canvas><div id="chartEmpty" class="empty" style="display:none">累積每日體重紀錄後，趨勢圖會顯示在這裡。</div></article>
+    <article class="card span-4"><h3>今日溫柔提醒</h3><div id="dailyReminders" class="list"><p class="muted">先記錄今天的狀態，讓建議更貼近你。</p></div><div class="divider"></div><div class="notice">生理週期推算並非避孕或診斷工具。若疼痛、出血量或情緒變化嚴重，請尋求醫療專業協助。</div></article>
+  </div>
+</section>
+
+<section class="view" id="tracker">
+  <div class="pagehead"><div><h2>每日數據紀錄</h2><p class="sub">可補登過往日期；每次儲存會保留該日紀錄。</p></div></div>
+  <form id="trackerForm" class="grid">
+    <article class="card span-7"><h3>身體與生活狀態</h3><div class="fields">
+      <div class="field"><label for="logDate">紀錄日期</label><input type="date" id="logDate" required></div>
+      <div class="field"><label for="bleeding">經血量</label><select id="bleeding"><option value="無">無</option><option value="量少">量少</option><option value="中等">中等</option><option value="量多">量多</option></select></div>
+      <div class="field"><label for="weight">體重（kg）</label><input id="weight" type="number" min="0" max="500" step=".1" placeholder="例如 58.5"></div>
+      <div class="field"><label for="bodyFat">體脂率（%）</label><input id="bodyFat" type="number" min="0" max="75" step=".1" placeholder="例如 28.0"></div>
+      <div class="field"><label for="waist">腰圍（cm）</label><input id="waist" type="number" min="0" step=".1"></div>
+      <div class="field"><label for="hip">臀圍（cm）</label><input id="hip" type="number" min="0" step=".1"></div>
+      <div class="field"><label for="leg">腿圍（cm）</label><input id="leg" type="number" min="0" step=".1"></div>
+      <div class="field"><label for="sleep">睡眠時數</label><input id="sleep" type="number" min="0" max="24" step=".25" placeholder="例如 7.5"></div>
+      <div class="field"><label for="water">飲水量（ml）</label><input id="water" type="number" min="0" max="15000" step="50" placeholder="例如 1800"></div>
+      <div class="field"><label for="mood">今日心情</label><select id="mood"><option value="">尚未選擇</option><option>極佳</option><option>平靜</option><option>疲憊</option><option>焦慮</option><option>暴躁</option></select></div>
+    </div></article>
+    <article class="card span-5"><h3>生理症狀</h3><div class="checkgrid" id="symptomChecks">
+      <label><input type="checkbox" value="腹痛">腹痛</label><label><input type="checkbox" value="便秘">便秘</label><label><input type="checkbox" value="水腫">水腫</label><label><input type="checkbox" value="胸脹">胸脹</label><label><input type="checkbox" value="頭痛">頭痛</label>
+    </div><div class="divider"></div><div class="field"><label for="notes">備註（選填）</label><textarea id="notes" rows="4" placeholder="例如：今天散步 20 分鐘、胃口變化……"></textarea></div><div class="notice">體重與體脂可能因水分、測量時間和器材而波動。觀察長期趨勢比單日數字更有參考價值。</div></article>
+    <div class="span-12 actions"><button class="primary" type="submit">儲存當日紀錄</button><button type="button" id="loadLog">載入所選日期紀錄</button><button type="button" id="clearLog">清空表單</button><span id="trackerStatus" class="muted small" aria-live="polite"></span></div>
+  </form>
+  <div class="card" style="margin-top:14px"><h3>最近紀錄</h3><div id="recentLogs" class="list"></div></div>
+</section>
+
+<section class="view" id="diet">
+  <div class="pagehead"><div><h2>飲食與預算建議</h2><p class="sub">熱量與營養素是估算起點，請依飢餓感、活動量及專業建議調整。</p></div></div>
+  <div class="grid">
+    <article class="card span-5"><h3>個人化營養試算</h3><div class="fields">
+      <div class="field"><label for="dietGoal">管理目標</label><select id="dietGoal"><option value="cut">減脂</option><option value="maintain">維持</option><option value="gain">增肌</option></select></div>
+      <div class="field"><label for="dietActivity">活動量</label><select id="dietActivity"><option value="1.2">久坐（1.2）</option><option value="1.375">輕度活動（1.375）</option><option value="1.55">中度活動（1.55）</option><option value="1.725">高度活動（1.725）</option><option value="1.9">非常高活動（1.9）</option></select></div>
+    </div><div class="divider"></div><div class="eyebrow">估算結果</div><div class="row"><span>BMR 基礎代謝</span><strong id="bmrOut">— kcal</strong></div><div class="row"><span>TDEE 每日總消耗</span><strong id="tdeeOut">— kcal</strong></div><div class="row"><span>目標熱量參考</span><strong id="targetOut">— kcal</strong></div><div class="divider"></div><div id="macroOutput"></div><p class="muted small">本工具使用女性 Mifflin–St Jeor 估算公式。減脂熱量不會低於估算 BMR 的 90% 作為簡單提醒，但這不是醫療安全門檻；孕期、哺乳期、未成年或有飲食疾患／疾病者應先諮詢專業人員。</p></article>
+    <article class="card span-7"><h3>餐費與用餐情境</h3><div class="fields">
+      <div class="field"><label for="budget">每餐預算</label><select id="budget"><option value="100">NT$100 以下</option><option value="150" selected>NT$100–180</option><option value="220">NT$180 以上</option></select></div>
+      <div class="field"><label for="foodMode">用餐類型</label><select id="foodMode"><option value="convenience">便利商店外食</option><option value="restaurant">一般餐館外食</option><option value="home">自煮食材組合</option></select></div>
+      <div class="field full"><label for="foodNeed">偏好或限制（選填）</label><input id="foodNeed" placeholder="例如：不吃牛、素食、需要方便攜帶"></div>
+    </div><div class="actions"><button class="primary" id="makeMeals" type="button">產生搭配建議</button></div><div class="divider"></div><div id="mealResults" class="list"></div><p class="muted small">價格依地區、店家與份量而異；以下是搭配範例，不是即時報價。若有食物過敏，請以包裝標示及店家資訊為準。</p></article>
+  </div>
+</section>
+
+<section class="view" id="workout">
+  <div class="pagehead"><div><h2>週期運動菜單</h2><p class="sub">依週期階段提供起始建議，請優先依當天體力、疼痛與恢復狀態調整。</p></div></div>
+  <div class="grid">
+    <article class="card span-4"><h3>訓練條件</h3><div class="field"><label for="workPlace">場所／器材</label><select id="workPlace"><option value="home">居家無器材</option><option value="bands">啞鈴／彈力帶</option><option value="gym">健身房器材</option><option value="outdoor">戶外</option></select></div><div class="field"><label for="workPart">目標部位</label><select id="workPart"><option value="all">全身</option><option value="upper">上肢</option><option value="lower">下肢</option><option value="core">核心</option><option value="glute">臀腿</option></select></div><div class="field"><label for="energy">今日體力感受</label><select id="energy"><option value="normal">一般</option><option value="high">精神充足</option><option value="low">疲憊／不適</option></select></div><button class="primary" id="makeWorkout" type="button">更新今日菜單</button><div class="divider"></div><div class="notice" id="workPhaseNote">請先於設定中輸入月經開始日。</div></article>
+    <article class="card span-8"><div class="row"><h3>推薦訓練</h3><span class="pill" id="workPhasePill">週期待設定</span></div><div id="workoutResults" class="list"></div><div class="divider"></div><p class="muted small">若運動時出現暈眩、胸痛、異常呼吸困難或劇烈疼痛，請停止運動並尋求適當協助。無須為了符合週期表而勉強訓練。</p></article>
+  </div>
+</section>
+
+<section class="view" id="settings">
+  <div class="pagehead"><div><h2>系統設定與備份</h2><p class="sub">資料僅保存在此瀏覽器的本機儲存空間；清除瀏覽資料可能移除紀錄。</p></div></div>
+  <div class="grid">
+    <article class="card span-7"><h3>基本資料</h3><form id="settingsForm"><div class="fields">
+      <div class="field"><label for="age">年齡</label><input id="age" type="number" min="18" max="100" required></div>
+      <div class="field"><label for="height">身高（cm）</label><input id="height" type="number" min="100" max="230" step=".1" required></div>
+      <div class="field"><label for="baseWeight">目前／參考體重（kg）</label><input id="baseWeight" type="number" min="25" max="350" step=".1" required></div>
+      <div class="field"><label for="activity">每日活動量</label><select id="activity"><option value="1.2">久坐</option><option value="1.375">輕度活動</option><option value="1.55">中度活動</option><option value="1.725">高強度活動</option><option value="1.9">非常高活動</option></select></div>
+      <div class="field"><label for="periodStart">上次月經第一天</label><input id="periodStart" type="date"></div>
+      <div class="field"><label for="cycleLengthSetting">平均週期天數</label><input id="cycleLengthSetting" type="number" min="15" max="60" value="28" required></div>
+    </div><div class="actions"><button class="primary" type="submit">儲存設定</button><span id="settingsStatus" class="muted small" aria-live="polite"></span></div></form></article>
+    <article class="card span-5"><h3>資料備份與還原</h3><p class="muted">匯出檔案會包含基本設定、每日紀錄與飲食偏好。請妥善保管備份檔，避免他人取得個人健康資料。</p><div class="actions"><button class="primary" id="exportData" type="button">匯出 JSON 備份</button><label class="filelabel" for="importFile">匯入 JSON 備份</label><input id="importFile" type="file" accept=".json,application/json" style="display:none"></div><div class="divider"></div><div class="notice">匯入會以備份內容取代目前 CycleFit 資料。匯入前建議先匯出現有資料，以免覆蓋。</div><div class="divider"></div><button id="resetData" type="button">清除本機所有資料</button><p class="muted small" id="backupStatus" aria-live="polite"></p></article>
+    <article class="card span-12"><h3>關於估算與隱私</h3><p class="muted">CycleFit 是自我觀察與生活規劃工具，不提供診斷、治療或避孕判斷。週期階段以月經第一天和平均週期長度推算，無法確認實際排卵。資料預設保存在目前瀏覽器，不會自動同步至其他裝置。</p></article>
+  </div>
+</section>
+</main>
+<footer>CycleFit · 單一 HTML 輕量版 · 健康建議僅供一般資訊參考</footer>
+<script>
+(() => {
+'use strict';
+const KEY='cyclefit_v1';
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+const defaultState={settings:{age:'',height:'',weight:'',activity:'1.2',periodStart:'',cycleLength:28},logs:{},prefs:{goal:'cut',budget:'150',foodMode:'convenience',foodNeed:''}};
+let state=loadState();
+function loadState(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&typeof s==='object')return {...structuredClone(defaultState),...s,settings:{...defaultState.settings,...s.settings},logs:s.logs&&typeof s.logs==='object'?s.logs:{},prefs:{...defaultState.prefs,...s.prefs}}}catch(e){}return structuredClone(defaultState)}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));return true}catch(e){alert('瀏覽器無法儲存資料，請確認本機儲存空間或瀏覽器設定。');return false}}
+const $=id=>document.getElementById(id);
+const num=v=>v!==''&&v!==null&&Number.isFinite(Number(v))?Number(v):null;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function switchView(id){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.view===id));if(id==='dashboard')drawChart()}
+window.switchView=switchView;
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+function cycleInfo(dateStr=today()){
+ const s=state.settings;if(!s.periodStart)return {phase:'尚未設定',day:null,length:Number(s.cycleLength)||28,tip:'請先設定上次月經第一天；預測僅供參考。'};
+ const start=new Date(s.periodStart+'T12:00:00'),now=new Date(dateStr+'T12:00:00');
+ if(!Number.isFinite(start.getTime())||now<start)return {phase:'日期待確認',day:null,length:Number(s.cycleLength)||28,tip:'請確認月經開始日期是否正確。'};
+ const len=Math.max(15,Math.min(60,Number(s.cycleLength)||28));
+ const elapsed=Math.floor((now-start)/86400000),day=(elapsed%len)+1;
+ let phase,tip;
+ if(day<=5){phase='月經期';tip='若有疲倦或疼痛，可選擇舒緩活動並留意補水與含鐵食物。'}
+ else if(day<=Math.max(6,Math.round(len*.46))){phase='卵泡期';tip='若精神與恢復狀態良好，可逐步增加訓練量；不必追求特定週期表現。'}
+ else if(day===Math.round(len*.5)){phase='排卵期（推估）';tip='日曆推算無法確認實際排卵；依身體感受安排活動。'}
+ else{phase='黃體期';tip='若有經前不適，可依疲勞程度調整強度，維持規律進食與睡眠。'}
+ return {phase,day,length:len,tip};
+}
+function getMetrics(){
+ const s=state.settings,w=num(s.weight),h=num(s.height),age=num(s.age);
+ if(!w||!h||!age)return null;
+ const bmr=10*w+6.25*h-5*age-161,activity=Number(s.activity)||1.2,tdee=bmr*activity;
+ const goal=$('dietGoal')?.value||state.prefs.goal||'cut';
+ const ratio={cut:[.3,.4,.3],maintain:[.4,.3,.3],gain:[.5,.3,.2]}[goal]||[.4,.3,.3];
+ const target=goal==='cut'?Math.max(tdee*.85,bmr*.9):goal==='gain'?tdee*1.08:tdee;
+ return {bmr,tdee,target,protein:target*ratio[1]/4,carbs:target*ratio[0]/4,fat:target*ratio[2]/9,ratio};
+}
+function latestLog(date=today()){return state.logs[date]||{}}
+function renderDashboard(){
+ const c=cycleInfo(),l=latestLog(),m=getMetrics();
+ $('todayLabel').textContent=today();$('dashDate').textContent=new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+ $('phaseName').textContent=c.phase;$('cycleDay').textContent=c.day?`週期第 ${c.day} 天`:'請設定月經開始日';$('cycleLength').textContent=`平均 ${c.length} 天`;$('phaseTip').textContent=c.tip;
+ $('calorieMetric').innerHTML=m?`${Math.round(m.target)} <small style="font-size:14px">kcal</small>`:'— <small style="font-size:14px">kcal</small>';$('calorieCaption').textContent=m?`BMR ${Math.round(m.bmr)} · TDEE ${Math.round(m.tdee)} kcal`:'請至設定填寫年齡、身高與體重';
+ [['Protein','protein'],['Carbs','carbs'],['Fat','fat']].forEach(([id,k])=>{const val=m?Math.round(m[k]):null;$('dash'+id).textContent=val===null?'—':`${val} g`;$(''+k+'Bar').style.width='0%'});
+ if(m){$('proteinBar').style.width=`${Math.min(100,(num(l.protein)||0)/m.protein*100)}%`;$('carbsBar').style.width=`${Math.min(100,(num(l.carbs)||0)/m.carbs*100)}%`;$('fatBar').style.width=`${Math.min(100,(num(l.fat)||0)/m.fat*100)}%`}
+ $('waterSummary').textContent=l.water?`${l.water} / 2000 ml`:'尚未記錄';$('waterBar').style.width=`${Math.min(100,(num(l.water)||0)/2000*100)}%`;$('sleepSummary').textContent=l.sleep?`${l.sleep} 小時`:'尚未記錄';$('moodSummary').textContent=l.mood||'尚未記錄';$('symptomSummary').textContent=l.symptoms?.length?l.symptoms.join('、'):'無／尚未記錄';
+ const reminders=[];if(c.phase==='月經期')reminders.push('留意身體舒適度，飲食可包含豆類、深綠色蔬菜等含鐵食物。');if(l.symptoms?.includes('水腫'))reminders.push('今天有記錄水腫，可觀察鹽分、睡眠與週期變化。');if(l.sleep&&Number(l.sleep)<7)reminders.push('昨晚睡眠較短，今天可安排恢復或較輕鬆的活動。');if(l.mood==='焦慮'||l.mood==='暴躁')reminders.push('試試短暫散步、伸展或放慢呼吸，選擇對自己有幫助的方式。');if(!reminders.length)reminders.push('記得補水、規律進食，並依今天的精神與體力安排活動。');
+ $('dailyReminders').innerHTML=reminders.map(t=>`<div class="meal"><p>${esc(t)}</p></div>`).join('');drawChart();
+}
+function drawChart(){
+ const canvas=$('trendChart'),ctx=canvas.getContext('2d'),rect=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+ canvas.width=Math.max(280,rect.width)*dpr;canvas.height=220*dpr;ctx.scale(dpr,dpr);const W=canvas.width/dpr,H=220;
+ ctx.clearRect(0,0,W,H);const entries=Object.entries(state.logs).filter(([d,l])=>d<=today()&&(num(l.weight)!==null||num(l.bodyFat)!==null)).sort((a,b)=>a[0].localeCompare(b[0])).slice(-30);
+ $('chartEmpty').style.display=entries.length?'none':'block';if(!entries.length)return;
+ const pad={l:32,r:18,t:18,b:30},pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
+ ctx.strokeStyle='#e9ecef';ctx.lineWidth=1;for(let i=0;i<4;i++){let y=pad.t+i*ph/3;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke()}
+ const weights=entries.map(x=>num(x[1].weight)).filter(v=>v!==null),min=Math.min(...weights)-1,max=Math.max(...weights)+1;
+ ctx.fillStyle='#6c757d';ctx.font='11px system-ui';ctx.fillText(`${max.toFixed(1)} kg`,2,pad.t+4);ctx.fillText(`${min.toFixed(1)} kg`,2,pad.t+ph);
+ const pts=entries.map((e,i)=>({x:pad.l+(entries.length===1?pw/2:i/(entries.length-1)*pw),y:pad.t+ph-(num(e[1].weight)===null?.5:(num(e[1].weight)-min)/(max-min))*ph,weight:num(e[1].weight),date:e[0]})).filter(p=>p.weight!==null);
+ if(pts.length){ctx.strokeStyle='#212529';ctx.lineWidth=2;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.fillStyle='#212529';pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fill()})}
+ ctx.fillStyle='#6c757d';ctx.fillText(entries[0][0].slice(5),pad.l,H-8);ctx.fillText(entries[entries.length-1][0].slice(5),Math.max(pad.l,W-pad.r-34),H-8);
+}
+window.addEventListener('resize',()=>{if($('dashboard').classList.contains('active'))drawChart()});
+function formToLog(){return {bleeding:$('bleeding').value,symptoms:[...document.querySelectorAll('#symptomChecks input:checked')].map(x=>x.value),weight:$('weight').value,bodyFat:$('bodyFat').value,waist:$('waist').value,hip:$('hip').value,leg:$('leg').value,sleep:$('sleep').value,water:$('water').value,mood:$('mood').value,notes:$('notes').value,updatedAt:new Date().toISOString()}}
+function loadLogIntoForm(date){const l=state.logs[date]||{};['bleeding','weight','bodyFat','waist','hip','leg','sleep','water','mood','notes'].forEach(k=>{if($(k))$(k).value=l[k]??(k==='bleeding'?'無':'')});document.querySelectorAll('#symptomChecks input').forEach(x=>x.checked=(l.symptoms||[]).includes(x.value));$('trackerStatus').textContent=state.logs[date]?'已載入該日紀錄。':'該日期尚無紀錄，可新增資料。'}
+$('logDate').value=today();
+$('trackerForm').addEventListener('submit',e=>{e.preventDefault();const date=$('logDate').value;if(!date)return;state.logs[date]=formToLog();save();$('trackerStatus').textContent='已儲存 '+date;renderDashboard();renderRecentLogs()});
+$('loadLog').addEventListener('click',()=>loadLogIntoForm($('logDate').value));
+$('clearLog').addEventListener('click',()=>{ $('trackerForm').reset();$('logDate').value=today();document.querySelectorAll('#symptomChecks input').forEach(x=>x.checked=false);$('trackerStatus').textContent='表單已清空，既有紀錄未刪除。'});
+function renderRecentLogs(){const items=Object.entries(state.logs).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7);$('recentLogs').innerHTML=items.length?items.map(([d,l])=>`<div class="row meal"><div><strong>${esc(d)}</strong><p>${esc(l.mood||'未填心情')} · 體重 ${esc(l.weight||'—')} kg · 飲水 ${esc(l.water||'—')} ml</p></div><button type="button" data-load="${esc(d)}">查看</button></div>`).join(''):'<div class="empty">目前還沒有每日紀錄。</div>';document.querySelectorAll('[data-load]').forEach(b=>b.addEventListener('click',()=>{$('logDate').value=b.dataset.load;loadLogIntoForm(b.dataset.load);switchView('tracker')}))}
+function renderSettings(){const s=state.settings; $('age').value=s.age;$('height').value=s.height;$('baseWeight').value=s.weight;$('activity').value=s.activity;$('periodStart').value=s.periodStart;$('cycleLengthSetting').value=s.cycleLength}
+$('settingsForm').addEventListener('submit',e=>{e.preventDefault();state.settings={age:$('age').value,height:$('height').value,weight:$('baseWeight').value,activity:$('activity').value,periodStart:$('periodStart').value,cycleLength:Number($('cycleLengthSetting').value)||28};save();$('settingsStatus').textContent='設定已儲存。';renderDashboard();renderDiet();renderWorkout()});
+function renderDiet(){
+ $('dietGoal').value=state.prefs.goal;$('dietActivity').value=state.settings.activity||'1.2';$('budget').value=state.prefs.budget;$('foodMode').value=state.prefs.foodMode;$('foodNeed').value=state.prefs.foodNeed;
+ const m=getMetrics();$('bmrOut').textContent=m?`${Math.round(m.bmr)} kcal`:'請先填寫基本資料';$('tdeeOut').textContent=m?`${Math.round(m.tdee)} kcal`:'—';$('targetOut').textContent=m?`${Math.round(m.target)} kcal`:'—';
+ $('macroOutput').innerHTML=m?`<div class="nutrient"><div class="row"><span>碳水 ${Math.round(m.ratio[0]*100)}%</span><b>${Math.round(m.carbs)} g</b></div></div><div class="nutrient"><div class="row"><span>蛋白質 ${Math.round(m.ratio[1]*100)}%</span><b>${Math.round(m.protein)} g</b></div></div><div class="nutrient"><div class="row"><span>脂質 ${Math.round(m.ratio[2]*100)}%</span><b>${Math.round(m.fat)} g</b></div></div>`:'<p class="muted">請至「系統設定」填寫年齡、身高與體重。</p>';
+}
+$('dietGoal').addEventListener('change',()=>{state.prefs.goal=$('dietGoal').value;save();renderDiet();renderDashboard()});
+$('dietActivity').addEventListener('change',()=>{state.settings.activity=$('dietActivity').value;save();renderDiet();renderDashboard()});
+$('makeMeals').addEventListener('click',()=>{
+ state.prefs={...state.prefs,goal:$('dietGoal').value,budget:$('budget').value,foodMode:$('foodMode').value,foodNeed:$('foodNeed').value};save();
+ const budget=Number(state.prefs.budget),mode=state.prefs.foodMode,need=state.prefs.foodNeed.trim();
+ const data={
+ convenience:[['高蛋白簡餐','無糖豆漿或鮮奶＋茶葉蛋／雞胸肉＋地瓜或飯糰＋一份水果','選擇原型食物，留意醬料與飲品糖量。'],['均衡組合','沙拉或蔬菜盒＋雞蛋／豆腐／雞肉＋全穀主食','沙拉醬可分開放，主食依活動量調整。']],
+ restaurant:[['自助餐搭配','一掌心蛋白質主菜＋兩份蔬菜＋一份飯','可請店家少油，主菜優先選蒸、滷、烤。'],['湯麵／便當調整','麵飯搭配蛋、豆腐或瘦肉，另補蔬菜','若份量不足，可加一份蛋白質或蔬菜。']],
+ home:[['高 CP 值採買','雞蛋／豆腐／豆類＋冷凍蔬菜＋糙米或地瓜','採買常備食材，分裝冷凍可節省時間。'],['簡易備餐','雞腿肉或豆腐＋時蔬＋米飯，搭配水果','以烤、蒸、煮為主，調味依喜好調整。']]
+ }[mode];
+ const range=budget<=100?'NT$100 以下':budget<=150?'約 NT$100–180':'NT$180 以上（可搭配較完整的蛋白質與蔬菜）';
+ $('mealResults').innerHTML=`<div class="notice">預算設定：${range}／餐</div>`+data.map(x=>`<div class="meal"><h4>${esc(x[0])}</h4><p>${esc(x[1])}</p><p style="margin-top:6px">${esc(x[2])}</p></div>`).join('')+(need?`<div class="notice">你的備註：「${esc(need)}」。請依此篩選食材並確認過敏原；目前清單為通用範例，未自動驗證所有限制。</div>`:'');
+});
+const exercises={
+ home:{all:[['椅子深蹲','2–3 組 × 8–12 次'],['牆面伏地挺身','2–3 組 × 8–12 次'],['臀橋','2–3 組 × 10–15 次'],['鳥狗式','2 組 × 每側 8 次']],upper:[['牆面伏地挺身','2–3 組 × 8–12 次'],['俯身手臂划船（無器材替代：肩胛擠壓）','2 組 × 10–12 次'],['手臂畫圈','2 組 × 30 秒']],lower:[['椅子深蹲','2–3 組 × 8–12 次'],['臀橋','2–3 組 × 10–15 次'],['扶椅提踵','2 組 × 12–15 次']],core:[['鳥狗式','2 組 × 每側 8 次'],['死蟲式','2 組 × 每側 8 次'],['膝蓋跪姿側棒式','2 組 × 每側 15–25 秒']],glute:[['臀橋','3 組 × 12 次'],['椅子深蹲','2–3 組 × 10 次'],['側躺抬腿','2 組 × 每側 12 次']]},
+ bands:{all:[['啞鈴／彈力帶深蹲','3 組 × 8–12 次'],['彈力帶划船','3 組 × 10–12 次'],['啞鈴地板推舉','2–3 組 × 8–12 次'],['臀橋','3 組 × 12 次']],upper:[['彈力帶划船','3 組 × 10–12 次'],['啞鈴肩推','2–3 組 × 8–10 次'],['啞鈴地板推舉','2–3 組 × 8–12 次']],lower:[['啞鈴高腳杯深蹲','3 組 × 8–12 次'],['啞鈴羅馬尼亞硬舉','3 組 × 8–12 次'],['臀橋','3 組 × 12 次']],core:[['死蟲式','2 組 × 每側 8 次'],['彈力帶抗旋轉推','2 組 × 每側 10 次'],['平板支撐','2 組 × 20–30 秒']],glute:[['啞鈴羅馬尼亞硬舉','3 組 × 8–12 次'],['臀橋','3 組 × 12 次'],['彈力帶側步','2 組 × 每側 10 步']]},
+ gym:{all:[['腿推機','3 組 × 8–12 次'],['坐姿划船','3 組 × 8–12 次'],['胸推機','2–3 組 × 8–12 次'],['跑步機輕鬆走','8–12 分鐘']],upper:[['坐姿划船','3 組 × 8–12 次'],['胸推機','3 組 × 8–12 次'],['下拉機','2–3 組 × 10 次']],lower:[['腿推機','3 組 × 8–12 次'],['腿後勾機','2–3 組 × 10–12 次'],['臀推機或臀橋','3 組 × 10–12 次']],core:[['死蟲式','2 組 × 每側 8 次'],['滑輪抗旋轉推','2 組 × 每側 10 次'],['平板支撐','2 組 × 20–30 秒']],glute:[['臀推機或臀橋','3 組 × 10–12 次'],['腿推機（腳位舒適即可）','3 組 × 10 次'],['腿後勾機','2–3 組 × 12 次']]},
+ outdoor:{all:[['快走','15–25 分鐘'],['公園椅坐站','2 組 × 10 次'],['站姿提踵','2 組 × 12 次']],upper:[['斜板伏地挺身（長椅）','2–3 組 × 8–12 次'],['手臂畫圈','2 組 × 30 秒'],['彈力帶划船（自備時）','2 組 × 12 次']],lower:[['快走或緩坡步行','15–25 分鐘'],['公園椅坐站','2–3 組 × 10 次'],['站姿提踵','2 組 × 12 次']],core:[['站姿抬膝','2 組 × 每側 10 次'],['鳥狗式（平坦安全處）','2 組 × 每側 8 次'],['輕鬆步行','10–15 分鐘']],glute:[['緩坡步行','15–20 分鐘'],['公園椅坐站','2–3 組 × 10 次'],['站姿後抬腿','2 組 × 每側 12 次']]}
+};
+function renderWorkout(){
+ const c=cycleInfo(),place=$('workPlace').value,part=$('workPart').value,energy=$('energy').value;
+ $('workPhasePill').textContent=c.day?`${c.phase} · 第 ${c.day} 天`:c.phase;$('workPhaseNote').textContent=c.tip;
+ let items=(exercises[place]||exercises.home)[part]||exercises.home.all,level='中等強度，動作保持可控制，組間休息 60–120 秒。';
+ if(c.phase==='月經期'){level='可從低強度開始，依疼痛與精神狀態決定是否訓練；不舒服時休息也完全可以。';}
+ if(c.phase==='黃體期'){level='維持熟悉訓練或中等強度，依疲勞與恢復狀態調整組數。';}
+ if(energy==='high')level+=' 今天精神充足，可在動作穩定、無不適時逐步增加難度。';
+ if(energy==='low'){items=[['輕鬆步行或原地踏步','5–15 分鐘，能自在說話的強度'],['溫和伸展與呼吸','5 分鐘；疼痛時停止']];level='今天以恢復為優先，不必完成原定訓練。若不適明顯或異常，請休息並尋求適當醫療建議。';}
+ if(c.phase==='尚未設定'||c.phase==='日期待確認')level='週期資料尚未完成，以下依一般體力狀態安排；可按感受調整。';
+ $('workoutResults').innerHTML=items.map((x,i)=>`<div class="workout"><div class="row"><h4>${i+1}. ${esc(x[0])}</h4><span class="pill">${esc(place==='outdoor'?'戶外':place==='gym'?'健身房':place==='bands'?'器材':'居家')}</span></div><p>${esc(x[1])}</p></div>`).join('')+`<div class="notice">${esc(level)} 建議先暖身 5 分鐘，訓練後緩和 3–5 分鐘。</div>`;
+}
+['workPlace','workPart','energy'].forEach(id=>$(id).addEventListener('change',renderWorkout));$('makeWorkout').addEventListener('click',renderWorkout);
+$('exportData').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({app:'CycleFit',version:1,exportedAt:new Date().toISOString(),...state},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='cyclefit_backup.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);$('backupStatus').textContent='備份檔已準備下載。'});
+$('importFile').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const raw=JSON.parse(await f.text());const incoming=raw.settings&&raw.logs?raw:raw.state;if(!incoming||typeof incoming!=='object'||!incoming.settings||!incoming.logs||typeof incoming.logs!=='object'||Array.isArray(incoming.logs))throw new Error('格式不符');const merged={settings:{...defaultState.settings,...incoming.settings},logs:incoming.logs,prefs:{...defaultState.prefs,...incoming.prefs}};if(!confirm('匯入將取代目前 CycleFit 資料，確定繼續嗎？'))return;state=merged;save();renderSettings();renderDashboard();renderRecentLogs();renderDiet();renderWorkout();$('backupStatus').textContent='匯入成功，資料已更新。';}catch(err){alert('無法匯入：檔案不是有效的 CycleFit JSON 備份。');$('backupStatus').textContent='匯入失敗，現有資料未更動。';}finally{e.target.value=''}});
+$('resetData').addEventListener('click',()=>{if(!confirm('確定清除本機所有 CycleFit 設定與紀錄？此動作無法復原，建議先匯出備份。'))return;state=structuredClone(defaultState);save();renderSettings();renderDashboard();renderRecentLogs();renderDiet();renderWorkout();$('backupStatus').textContent='本機資料已清除。'});
+renderSettings();renderDiet();renderWorkout();renderDashboard();renderRecentLogs();$('makeMeals').click();
+})();
+</script>
+</body>
+</html>
